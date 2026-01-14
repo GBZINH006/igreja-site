@@ -3,7 +3,6 @@ import { supabase } from '../../services/supabase';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
-import { Message } from 'primereact/message';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
@@ -13,11 +12,12 @@ import { useNavigate } from 'react-router-dom';
 
 
 export const Cadastro = () => {
+    // Definimos os nomes das variáveis para bater EXATAMENTE com suas colunas no Supabase
     const [formData, setFormData] = useState({
         tipo: 'Membro', nome: '', nascimento: null, sexo: '', estadoCivil: '', pais_nome: '', data_casamento: null,
         contato: '', ocupacao: '', forma_recepcao: '', data_batismo_aguas: null, igreja_origem: '',
         cargo: '', qtd_filhos: 0, tem_computador: false, inadimplente: false,
-        status: 'análise',
+        status: 'análise', // Status inicial
     });
     const [loading, setLoading] = useState(false);
     const [enviado, setEnviado] = useState(false);
@@ -28,25 +28,43 @@ export const Cadastro = () => {
         if (!formData.nome || !formData.contato) return alert("Preencha os campos essenciais.");
         setLoading(true);
 
+        // O objeto formData é enviado diretamente, com status garantido como 'análise'
+        const dataToSend = { ...formData, status: 'análise' };
+
         const { error } = await supabase
             .from('membros')
-            .insert([formData]);
+            .insert([dataToSend]);
 
-        if (!error) setEnviado(true);
-        else console.error(error);
+        if (error) {
+            console.error(error);
+            alert(`Erro ao salvar: ${error.message}. Verifique os nomes das suas colunas no Supabase.`);
+        } else {
+            setEnviado(true);
+        }
         setLoading(false);
     };
 
-    if (enviado) return (<div className="flex align-items-center justify-content-center h-screen bg-gray-100"><Card className="text-center shadow-8 w-full md:w-30rem border-round-2xl"><i className="pi pi-check-circle text-6xl text-green-500 mb-4"></i><h2>CADASTRO ENVIADO!</h2><p className="text-700">Seus dados foram enviados para análise ministerial.</p><Button label="Voltar para Home" className="mt-4" onClick={() => navigate('/')} /></Card></div>);
+    // TELA DE SUCESSO (IDÊNTICA À IMAGEM ENVIADA)
+    if (enviado) {
+        return (
+            <div className="flex align-items-center justify-content-center h-screen bg-gray-100 p-4">
+                <Card className="text-center shadow-8 w-full md:w-30rem border-round-xl">
+                    <i className="pi pi-check-circle text-5xl text-green-600 mb-3"></i>
+                    <h2 className="text-900 mb-3">CADASTRO ENVIADO!</h2>
+                    <p className="text-600 mb-5">Seus dados foram enviados para análise ministerial.</p>
+                    <Button label="Voltar para Home" onClick={() => navigate('/')} /> 
+                </Card>
+            </div>
+        );
+    }
 
     const estadosCivis = ['Solteiro(a)', 'Casado(a)', 'Viúvo(a)', 'Divorciado(a)'];
     const sexos = ['Masculino', 'Feminino'];
 
     return (
-        <div className="p-4">
-            <Card title="FICHA CADASTRAL - Assembleia de Deus">
+        <div className="p-4 flex justify-content-center bg-gray-100 min-h-screen">
+            <Card title="FICHA CADASTRAL - Assembleia de Deus" className="w-full md:w-40rem shadow-4">
                 <div className="p-fluid flex flex-column gap-4">
-
                     <div className="flex gap-4">
                         <label className="flex align-items-center gap-2"><RadioButton name="tipo" value="Membro" checked={formData.tipo === 'Membro'} onChange={(e) => setFormData({...formData, tipo: e.value})} /> Membro</label>
                         <label className="flex align-items-center gap-2"><RadioButton name="tipo" value="Congregado" checked={formData.tipo === 'Congregado'} onChange={(e) => setFormData({...formData, tipo: e.value})} /> Congregado</label>
