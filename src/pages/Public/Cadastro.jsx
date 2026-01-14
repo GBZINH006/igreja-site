@@ -83,6 +83,7 @@ export const Cadastro = () => {
                     <Button label="SALVAR FICHA CADASTRAL COMPLETA" icon="pi pi-send" loading={loading} onClick={handleCadastro} className="mt-4 p-button-success" />
                 </div>
             </Card>
+            <Message>Cadastro realizado com sucesso!</Message>
         </div>
     );
 };
