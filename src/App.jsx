@@ -16,6 +16,7 @@ import { Home } from './pages/Public/Home';
 import { Cadastro } from './pages/Public/Cadastro';
 import { Secretaria } from './pages/Admin/Secretaria';
 import { LoginAdmin } from './pages/Login/LoginAdmin';
+import { Login } from './pages/Public/Login'
 
 function App() {
   return (
@@ -36,14 +37,7 @@ function App() {
           <Route path="/secretaria" element={<Secretaria />} />
 
           {/* Rota de segurança para links errados (Evita o erro 404 vazio) */}
-          <Route path="*" element={
-            <div className="flex flex-column align-items-center justify-content-center h-screen">
-              <i className="pi pi-exclamation-triangle text-6xl text-yellow-500 mb-4"></i>
-              <h1>404 - Página não encontrada</h1>
-              <p>O link que você acessou não existe.</p>
-              <a href="/" className="mt-4 text-blue-500 underline">Voltar para a Home</a>
-            </div>
-          } />
+          <Route path="/Login" element={<Login />} />
         </Routes>
       </BrowserRouter>
     </PrimeReactProvider>

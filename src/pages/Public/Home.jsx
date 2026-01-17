@@ -1,53 +1,94 @@
-import React from 'react';
+import React, { useState, useRef } from 'react'; // Importado useState e useRef
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useNavigate } from 'react-router-dom';
-import BeholdFeed from '../../components/BeholdFeed';
+import { Dialog } from 'primereact/dialog'; // Novo
+import { InputText } from 'primereact/inputtext'; // Novo
+import { Password } from 'primereact/password'; // Novo
+import { Toast } from 'primereact/toast'; // Novo
+import "./style.css"
 
 export const Home = () => {
     const navigate = useNavigate();
+    const toast = useRef(null);
 
-    const eventos = [
-        {
-            id: 1,
-            titulo: "Congresso de Missões 2026",
-            categoria: "MISSÕES",
-            descricao: "Um despertar para as nações. Participe conosco em Fevereiro!",
-            imagem: "images.unsplash.com",
-            cor: "blue-600"
-        },
-        {
-            id: 2,
-            titulo: "EBF - Crianças de Cristo",
-            categoria: "INFANTIL",
-            descricao: "Escola Bíblica de Férias para todas as crianças da comunidade.",
-            imagem: "images.unsplash.com",
-            cor: "orange-600"
-        },
-        {
-            id: 3,
-            titulo: "Conferência de Louvor",
-            categoria: "LOUVOR",
-            descricao: "Workshop e noite de adoração com todo o ministério de música.",
-            imagem: "images.unsplash.com",
-            cor: "purple-600"
+    // Estados para controle de acesso e animação
+    const [displayLogin, setDisplayLogin] = useState(false);
+    const [isShaking, setIsShaking] = useState(false);
+    const [password, setPassword] = useState('');
+
+    const eventos = [];
+
+    // Função que valida o acesso
+    const handleAdminAccess = () => {
+        if (password === 'paodavida') { // Substitua pela sua lógica de senha
+            navigate('/admin-login');
+        } else {
+            setIsShaking(true);
+            toast.current.show({ 
+                severity: 'error', 
+                summary: 'Acesso Negado', 
+                detail: 'Senha administrativa incorreta.', 
+                life: 3000 
+            });
+            setTimeout(() => setIsShaking(false), 400);
         }
-    ];
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 font-sans">
+            <Toast ref={toast} />
             
-            {/* 1. BANNER PRINCIPAL - COM IMAGEM DE ALTA QUALIDADE */}
+            {/* CSS de Animação injetado diretamente */}
+            <style>{`
+                @keyframes shake {
+                    0% { transform: translateX(0); }
+                    25% { transform: translateX(-10px); }
+                    50% { transform: translateX(10px); }
+                    75% { transform: translateX(-10px); }
+                    100% { transform: translateX(0); }
+                }
+                .shake-card { animation: shake 0.4s ease-in-out; }
+            `}</style>
+
+            {/* MODAL DE LOGIN (Aparece ao clicar em Gerenciar) */}
+            <Dialog 
+                header="Acesso Restrito" 
+                visible={displayLogin} 
+                style={{ width: '350px' }} 
+                onHide={() => setDisplayLogin(false)}
+                footer={
+                    <div>
+                        <Button label="Cancelar" icon="pi pi-times" onClick={() => setDisplayLogin(false)} className="p-button-text" />
+                        <Button label="Entrar" icon="pi pi-check" onClick={handleAdminAccess} autoFocus />
+                    </div>
+                }
+            >
+                <div className="flex flex-column gap-2 mt-2">
+                    <label htmlFor="pass">Digite a senha de administrador:</label>
+                    <Password 
+                        id="pass" 
+                        value={password} 
+                        onChange={(e) => setPassword(e.target.value)} 
+                        feedback={false} 
+                        toggleMask 
+                        className="w-full"
+                        inputClassName="w-full"
+                        onKeyDown={(e) => e.key === 'Enter' && handleAdminAccess()}
+                    />
+                </div>
+            </Dialog>
+
+            {/* 1. BANNER PRINCIPAL */}
             <div className="relative w-full h-30rem md:h-40rem flex align-items-center justify-content-center text-white" 
                  style={{ 
-                     // SUBSTITUA ESTE LINK pela URL da foto original em alta resolução (salva na sua pasta public/assets)
-                     background: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('images.unsplash.com')",
-                     backgroundSize: 'cover', // Isso impede que a imagem fique esticada
+                     background: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('src/pages/Public/Igreja1.jpg')",
+                     backgroundSize: 'cover',
                      backgroundPosition: 'center',
                      backgroundRepeat: 'no-repeat'
                  }}>
                 <div className="text-center p-4">
-                    <img src="encrypted-tbn0.gstatic.com" alt="Logo" className="w-6rem mb-4" />
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzJVKsXgOQMSsC2HaVNYw9XeATeJZ7lo4TWw&s" alt="Logo" className="w-6rem mb-4" />
                     <h1 className="text-4xl md:text-7xl font-bold mb-2">AD BELA VISTA</h1>
                     <p className="text-xl md:text-2xl mb-5 font-light">Setor 9 - Palhoça/SC</p>
                     <div className="flex justify-content-center">
@@ -56,77 +97,42 @@ export const Home = () => {
                 </div>
             </div>
 
-            {/* 2. CARDS TRANSPARENTES (Ícones Pretos) */}
+            {/* 2. CARDS */}
             <div className="relative px-4 md:px-8 mt-6 z-1"> 
                 <div className="grid justify-content-center">
                     <div className="col-12 md:col-4 lg:col-3">
-                        <Card className="text-center shadow-8 border-none bg-white-alpha-20 backdrop-blur-md hover:bg-black-alpha-10 transition-duration-300" style={{ borderRadius: '15px' }}>
+                        <Card className="text-center shadow-8 border-none bg-black-alpha-20 backdrop-blur-md hover:bg-black-alpha-10 transition-duration-300" style={{ borderRadius: '15px' }}>
                             <div className="p-3 border-circle bg-blue-600 inline-flex align-items-center justify-content-center mb-3">
                                 <i className="pi pi-users text-2xl text-black"></i>
                             </div>
                             <h3 className="m-0 mb-2 text-900 font-bold">Membros</h3>
                             <p className="text-700 text-sm mb-4">Acesse seu portal, dízimos e cursos.</p>
-                            <Button label="ACESSAR" className="p-button-sm w-full p-button-rounded" onClick={() => navigate('/login')} />
+                            <Button label="ACESSAR" className="p-button-sm w-full p-button-rounded" onClick={() => navigate('/Login')} />
                         </Card>
                     </div>
 
+                    {/* CARD GESTÃO COM ANIMAÇÃO */}
                     <div className="col-12 md:col-4 lg:col-3">
-                        <Card className="text-center shadow-8 border-none bg-white-alpha-20 backdrop-blur-md hover:bg-black-alpha-10 transition-duration-300" style={{ borderRadius: '15px' }}>
+                        <Card 
+                            className={`text-center shadow-8 border-none bg-black-alpha-20 backdrop-blur-md hover:bg-black-alpha-10 transition-duration-300 ${isShaking ? 'shake-card border-1 border-red-500' : ''}`} 
+                            style={{ borderRadius: '15px' }}
+                        >
                             <div className="p-3 border-circle bg-orange-600 inline-flex align-items-center justify-content-center mb-3">
                                 <i className="pi pi-lock text-2xl text-black"></i>
                             </div>
                             <h3 className="m-0 mb-2 text-900 font-bold">Gestão</h3>
                             <p className="text-700 text-sm mb-4">Secretaria, Mídia e Painel Pastoral.</p>
-                            <Button label="GERENCIAR" severity="warning" className="p-button-sm w-full p-button-rounded" onClick={() => navigate('/admin-login')} />
+                            <Button 
+                                label="GERENCIAR" 
+                                severity="warning" 
+                                className="p-button-sm w-full p-button-rounded" 
+                                onClick={() => setDisplayLogin(true)} // Abre o Modal
+                            />
                         </Card>
                     </div>
                 </div>
             </div>
-
-            {/* 3. SEÇÃO DO INSTAGRAM (BEHOLD) */}
-            <div className="p-4 md:p-8 bg-white mt-8">
-                <div className="text-center mb-6">
-                    <h2 className="text-900 font-bold text-4xl mb-2">Acompanhe nosso Instagram</h2>
-                    <p className="text-600">Fique por dentro de tudo o que acontece na nossa igreja</p>
-                </div>
-                
-                <div className="container mx-auto" style={{ maxWidth: '1200px' }}>
-                    {/* ID do feed que você nos forneceu */}
-                    <BeholdFeed />
-                </div>
-            </div>
-
-            {/* 4. EVENTOS */}
-            <div className="p-4 md:p-8 container mx-auto">
-                <div className="flex justify-content-between align-items-end mb-5">
-                    <div>
-                        <span className="text-blue-600 font-bold uppercase tracking-wider text-sm">Agenda 2026</span>
-                        <h2 className="text-900 font-bold m-0 text-4xl">Próximos Eventos</h2>
-                    </div>
-                    <Button label="Ver Todos" icon="pi pi-calendar" className="p-button-text font-bold" />
-                </div>
-
-                <div className="grid">
-                    {eventos.map((evento) => (
-                        <div key={evento.id} className="col-12 md:col-6 lg:col-4">
-                            <div className="bg-white border-round-xl shadow-2 overflow-hidden hover:shadow-8 transition-all transition-duration-300 cursor-pointer h-full">
-                                <div className="relative">
-                                    <img src={evento.imagem} alt={evento.titulo} className="w-full h-15rem object-cover" />
-                                    <span className={`absolute top-0 right-0 m-3 px-3 py-1 border-round-lg text-white font-bold text-xs bg-${evento.cor}`}>
-                                        {evento.categoria}
-                                    </span>
-                                </div>
-                                <div className="p-4">
-                                    <h4 className="mt-0 mb-2 text-xl text-900 font-bold">{evento.titulo}</h4>
-                                    <p className="text-600 text-sm line-height-3 mb-0">{evento.descricao}</p>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* 5. FOOTER */}
+{/* 5. FOOTER */}
             <footer className="bg-gray-900 text-white p-8 mt-8">
                 <div className="grid container mx-auto">
                     <div className="col-12 md:col-6">
