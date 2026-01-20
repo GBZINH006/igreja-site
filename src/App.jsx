@@ -16,7 +16,8 @@ import { Home } from './pages/Public/Home';
 import { Cadastro } from './pages/Public/Cadastro';
 import { Secretaria } from './pages/Admin/Secretaria';
 import { LoginAdmin } from './pages/Login/LoginAdmin';
-import { Login } from './pages/Public/Login'
+import { Login } from './pages/Public/Login';
+import { FichaCadastro } from './pages/Public/FichaCadastro';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
 
           {/* Rota de segurança para links errados (Evita o erro 404 vazio) */}
           <Route path="/Login" element={<Login />} />
+          <Route path='/FichaCadastro' element={<FichaCadastro />} />
         </Routes>
       </BrowserRouter>
     </PrimeReactProvider>

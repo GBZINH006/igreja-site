@@ -107,7 +107,7 @@ export const Home = () => {
                             </div>
                             <h3 className="m-0 mb-2 text-900 font-bold">Membros</h3>
                             <p className="text-700 text-sm mb-4">Acesse seu portal, dízimos e cursos.</p>
-                            <Button label="ACESSAR" className="p-button-sm w-full p-button-rounded" onClick={() => navigate('/Login')} />
+                            <Button label="ACESSAR" className="p-button-sm w-full p-button-rounded" onClick={() => navigate('/FichaCadastro')} />
                         </Card>
                     </div>
 
@@ -154,7 +154,7 @@ export const Home = () => {
                             <Button 
                                 icon="pi pi-instagram" 
                                 className="p-button-rounded p-button-outlined p-button-secondary" 
-                                onClick={() => window.open('www.instagram.com', '_blank')} 
+                                onClick={() => window.open('https://www.instagram.com/adpalhoca_belavista9?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==', '_blank')} 
                             />
                         </div>
                     </div>

@@ -1,0 +1,13 @@
+/* Garante que o canvas seja visível na exportação */
+.sigCanvas {
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+/* Estilo para o PDF sair limpo */
+@media print {
+    .p-button {
+        display: none !important;
+    }
+}
