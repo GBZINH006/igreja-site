@@ -25,9 +25,22 @@ export const FichaCadastro = () => {
 
     // Mapeamento dos 17 Setores da AD Palhoça (2026)
     const mapeamentoSetores = {
-        1: { nome: "Templo Sede (Ponte do Imaruim)", tipo: "Sede" },
+         1: { nome: "Templo Sede (Ponte do Imaruim)", tipo: "Sede" },
         2: { nome: "Caminho Novo", tipo: "Setor / Congregação" },
-        // ... adicione os outros setores aqui ...
+        3: { nome: "Pachecos", tipo: "Setor / Congregação" },
+        4: { nome: "Aririú", tipo: "Setor / Congregação" },
+        5: { nome: "Rio Grande", tipo: "Setor / Congregação" },
+        6: { nome: "Alto Aririú", tipo: "Setor / Congregação" },
+        7: { nome: "Enseada da Pinheira / Morretes", tipo: "Setor / Congregação" },
+        8: { nome: "Passa Vinte", tipo: "Setor / Congregação" },
+        9: { nome: "Bela Vista / Shalom / Vale da Benção", tipo: "Setor / Congregação" },
+        10: { nome: "Madri / São Sebastião", tipo: "Setor / Congregação" },
+        11: { nome: "Pagani", tipo: "Setor / Congregação" },
+        12: { nome: "Jardim Eldorado", tipo: "Setor / Congregação" },
+        13: { nome: "Brejaru", tipo: "Setor / Congregação" },
+        14: { nome: "Frei Lauro", tipo: "Setor / Congregação" },
+        15: { nome: "Barra do Aririú", tipo: "Setor / Congregação" },
+        16: { nome: "Vila Nova", tipo: "Setor / Congregação" },
         17: { nome: "Alaor Silveira / São Luiz", tipo: "Setor / Congregação" }
     };
 
@@ -62,8 +75,9 @@ export const FichaCadastro = () => {
         cargo: "", chefeFamilia: "", computador: "", internet: "",
         dirigente: false, oracao: false, mocidade: false, prof: false, missoes: false,
         coordenador: false, evangelismo: false, familiar: false, discipulado: false,
-        adicional: false, status: 'análise'
+        adicional: false, foto_url: null, status: 'análise'
     });
+    
 
     const [loading, setLoading] = useState(false);
     const [enviado, setEnviado] = useState(false);
@@ -168,7 +182,7 @@ export const FichaCadastro = () => {
                     {/* CABEÇALHO */}
                     <div className="flex justify-content-between align-items-start border-bottom-2 border-primary mb-4 pb-3">
                         <div className="flex flex-column">
-                            <img src="https://encrypted-tbn0.gstatic.com" alt="Logo" style={{ height: '60px', width: '60px' }} />
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzJVKsXgOQMSsC2HaVNYw9XeATeJZ7lo4TWw&s" alt="Logo" style={{ height: '60px', width: '60px' }} />
                             <span className="text-xs mt-2 text-700">Rua Frei Lauro, 44 - Ponte do Imaruim<br />CEP 88130-750 - Palhoça/SC</span>
                         </div>
                         <div className="text-right">
@@ -291,41 +305,114 @@ export const FichaCadastro = () => {
                         </div>
                     </div>
 
-                    {/* SEÇÃO MINISTERIAL/FUNÇÕES */}
-                    <div className="box mb-4">
-                        <h4 className="bg-blue-50 p-2 border-left-3 border-primary text-primary mb-3 uppercase">3. Vida Ministerial e Funções</h4>
-                        <div className="p-fluid grid">
-                            <div className="field col-12 md:col-4">
-                                <label className="font-bold text-xs">FORMA DE RECEPÇÃO</label>
-                                <Dropdown value={formData.recebimento} options={opcoesRecebimento} onChange={(e) => setFormData({...formData, recebimento: e.value})} placeholder="Selecione" required />
-                            </div>
-                             <div className='field col-12 md:col-4'>
-                                <label className='font-bold text-xs'>DATA DE BATISMO</label>
-                                <Calendar value={formData.data_batismo} onChange={(e) => setFormData({ ...formData, data_batismo: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" showIcon />
-                            </div>
-                            <div className="field col-12 md:col-4">
-                                <label className="font-bold text-xs">APROVAÇÃO</label>
-                                <InputText value={formData.aprovacao || ''} onChange={(e) => setFormData({...formData, aprovacao: e.target.value})} placeholder="Aprovado por quem?" />
-                            </div>
-                            
-                            {/* Checkboxes de Atuação */}
-                            <div className="field col-12 mt-3">
-                                <label className="font-bold text-xs block mb-2">Áreas de Interesse / Atuação:</label>
-                                <div className="flex flex-wrap gap-3">
-                                    <div className="flex align-items-center"><Checkbox inputId="chk_dirigente" onChange={e => setFormData({...formData, dirigente: e.checked})} checked={formData.dirigente} /><label htmlFor="chk_dirigente" className="ml-2">Dirigente</label></div>
-                                    <div className="flex align-items-center"><Checkbox inputId="chk_oracao" onChange={e => setFormData({...formData, oracao: e.checked})} checked={formData.oracao} /><label htmlFor="chk_oracao" className="ml-2">Oração</label></div>
-                                    <div className="flex align-items-center"><Checkbox inputId="chk_mocidade" onChange={e => setFormData({...formData, mocidade: e.checked})} checked={formData.mocidade} /><label htmlFor="chk_mocidade" className="ml-2">Mocidade</label></div>
-                                    <div className="flex align-items-center"><Checkbox inputId="chk_prof" onChange={e => setFormData({...formData, prof: e.checked})} checked={formData.prof} /><label htmlFor="chk_prof" className="ml-2">Professores EBD</label></div>
-                                    <div className="flex align-items-center"><Checkbox inputId="chk_missoes" onChange={e => setFormData({...formData, missoes: e.checked})} checked={formData.missoes} /><label htmlFor="chk_missoes" className="ml-2">Missões</label></div>
-                                    <div className="flex align-items-center"><Checkbox inputId="chk_coordenador" onChange={e => setFormData({...formData, coordenador: e.checked})} checked={formData.coordenador} /><label htmlFor="chk_coordenador" className="ml-2">Coordenador</label></div>
-                                    <div className="flex align-items-center"><Checkbox inputId="chk_evangelismo" onChange={e => setFormData({...formData, evangelismo: e.checked})} checked={formData.evangelismo} /><label htmlFor="chk_evangelismo" className="ml-2">Evangelismo</label></div>
-                                    <div className="flex align-items-center"><Checkbox inputId="chk_familiar" onChange={e => setFormData({...formData, familiar: e.checked})} checked={formData.familiar} /><label htmlFor="chk_familiar" className="ml-2">Familiar</label></div>
-                                    <div className="flex align-items-center"><Checkbox inputId="chk_discipulado" onChange={e => setFormData({...formData, discipulado: e.checked})} checked={formData.discipulado} /><label htmlFor="chk_discipulado" className="ml-2">Discipulado</label></div>
-                                    <div className="flex align-items-center"><Checkbox inputId="chk_adicional" onChange={e => setFormData({...formData, adicional: e.checked})} checked={formData.adicional} /><label htmlFor="chk_adicional" className="ml-2">Adicional</label></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {/* SEÇÃO 3. VIDA MINISTERIAL/FUNÇÕES */}
+<div className="box mb-4">
+    <h4 className="bg-blue-50 p-2 border-left-3 border-primary text-primary mb-3 uppercase">3. Vida Ministerial e Funções</h4>
+    <div className="p-fluid grid">
+        
+        {/* LINHA 1: CARGOS PRINCIPAIS */}
+        <div className="field col-12 flex flex-wrap gap-4 align-items-center">
+            <label className="font-bold text-xs uppercase">CARGO(S):</label>
+            <div className="flex align-items-center">
+                <Checkbox inputId="auxiliar" onChange={e => setFormData({...formData, cargo: 'Auxiliar'})} checked={formData.cargo === 'Auxiliar'} />
+                <label htmlFor="auxiliar" className="ml-2">AUXILIAR</label>
+            </div>
+            <div className="flex align-items-center">
+                <Checkbox inputId="diacono" onChange={e => setFormData({...formData, cargo: 'Diácono'})} checked={formData.cargo === 'Diácono'} />
+                <label htmlFor="diacono" className="ml-2">DIÁCONO</label>
+            </div>
+            <div className="flex align-items-center">
+                <Checkbox inputId="presbitero" onChange={e => setFormData({...formData, cargo: 'Presbítero'})} checked={formData.cargo === 'Presbítero'} />
+                <label htmlFor="presbitero" className="ml-2">PRESBITERO</label>
+            </div>
+            <div className="flex align-items-center">
+                <Checkbox inputId="evangelista" onChange={e => setFormData({...formData, cargo: 'Evangelista'})} checked={formData.cargo === 'Evangelista'} />
+                <label htmlFor="evangelista" className="ml-2">EVANGELISTA</label>
+            </div>
+            <div className="flex align-items-center">
+                <Checkbox inputId="pastor" onChange={e => setFormData({...formData, cargo: 'Pastor'})} checked={formData.cargo === 'Pastor'} />
+                <label htmlFor="pastor" className="ml-2">PASTOR</label>
+            </div>
+             <div className="field col-12 md:col-3">
+                <label className="font-bold text-xs uppercase">DATA APRESENTAÇÃO</label>
+                 <Calendar value={formData.data_apresentacao} onChange={(e) => setFormData({ ...formData, data_apresentacao: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" showIcon />
+            </div>
+        </div>
+        
+        {/* Separador visual */}
+        <div className="col-12"><hr/></div>
+
+        {/* LINHA 2: FUNÇÕES E DATAS */}
+        <div className="field col-12 grid">
+            <div className="col-12 md:col-4 flex align-items-center gap-2">
+                <Checkbox inputId="dirigente" onChange={e => setFormData({...formData, dirigente: e.checked})} checked={formData.dirigente} />
+                <label htmlFor="dirigente" className="ml-2 font-bold text-xs">DIRIGENTE CONGREGAÇÃO - DATA:</label>
+                <Calendar value={formData.data_dirigente} onChange={(e) => setFormData({ ...formData, data_dirigente: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" />
+            </div>
+             <div className="col-12 md:col-4 flex align-items-center gap-2">
+                <Checkbox inputId="missoes" onChange={e => setFormData({...formData, missoes: e.checked})} checked={formData.missoes} />
+                 <label htmlFor="missoes" className="ml-2 font-bold text-xs">LÍDER MISSÕES - DATA:</label>
+                <Calendar value={formData.data_missoes} onChange={(e) => setFormData({ ...formData, data_missoes: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" />
+            </div>
+             <div className="col-12 md:col-4 flex align-items-center gap-2">
+                <Checkbox inputId="familiar" onChange={e => setFormData({...formData, familiar: e.checked})} checked={formData.familiar} />
+                 <label htmlFor="familiar" className="ml-2 font-bold text-xs">LÍDER CULTO FAMILIAR - DATA:</label>
+                 <Calendar value={formData.data_familiar} onChange={(e) => setFormData({ ...formData, data_familiar: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" />
+            </div>
+        </div>
+
+         {/* LINHA 3: CÍRCULO DE ORAÇÃO E OUTROS */}
+        <div className="field col-12 grid">
+            <div className="col-12 md:col-4 flex align-items-center gap-2">
+                <Checkbox inputId="oracao" onChange={e => setFormData({...formData, oracao: e.checked})} checked={formData.oracao} />
+                <label htmlFor="oracao" className="ml-2 font-bold text-xs">LÍDER CÍRCULO DE ORAÇÃO - DATA:</label>
+                <Calendar value={formData.data_oracao} onChange={(e) => setFormData({ ...formData, data_oracao: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" />
+            </div>
+             <div className="col-12 md:col-4 flex align-items-center gap-2">
+                <Checkbox inputId="coordenador" onChange={e => setFormData({...formData, coordenador: e.checked})} checked={formData.coordenador} />
+                 <label htmlFor="coordenador" className="ml-2 font-bold text-xs">COORDENADOR GERAL - DATA:</label>
+                <Calendar value={formData.data_coordenador} onChange={(e) => setFormData({ ...formData, data_coordenador: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" />
+            </div>
+             <div className="col-12 md:col-4 flex align-items-center gap-2">
+                <Checkbox inputId="discipulado" onChange={e => setFormData({...formData, discipulado: e.checked})} checked={formData.discipulado} />
+                 <label htmlFor="discipulado" className="ml-2 font-bold text-xs">LÍDER DISCIPULADO - DATA:</label>
+                 <Calendar value={formData.data_discipulado} onChange={(e) => setFormData({ ...formData, data_discipulado: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" />
+            </div>
+        </div>
+
+        {/* LINHA 4: MOCIDADE E OUTROS */}
+         <div className="field col-12 grid">
+            <div className="col-12 md:col-4 flex align-items-center gap-2">
+                <Checkbox inputId="mocidade" onChange={e => setFormData({...formData, mocidade: e.checked})} checked={formData.mocidade} />
+                <label htmlFor="mocidade" className="ml-2 font-bold text-xs">LÍDER MOCIDADE - DATA:</label>
+                <Calendar value={formData.data_mocidade} onChange={(e) => setFormData({ ...formData, data_mocidade: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" />
+            </div>
+            {/* Campo vazio para alinhamento visual */}
+             <div className="col-12 md:col-4"></div>
+             <div className="col-12 md:col-4"></div>
+        </div>
+
+
+         {/* LINHA 5: EBD E EVANGELISMO */}
+         <div className="field col-12 grid">
+            <div className="col-12 md:col-4 flex align-items-center gap-2">
+                <Checkbox inputId="prof" onChange={e => setFormData({...formData, prof: e.checked})} checked={formData.prof} />
+                <label htmlFor="prof" className="ml-2 font-bold text-xs">PROF EBD - DATA:</label>
+                <Calendar value={formData.data_prof} onChange={(e) => setFormData({ ...formData, data_prof: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" />
+            </div>
+             <div className="col-12 md:col-4 flex align-items-center gap-2">
+                <Checkbox inputId="evangelismo" onChange={e => setFormData({...formData, evangelismo: e.checked})} checked={formData.evangelismo} />
+                 <label htmlFor="evangelismo" className="ml-2 font-bold text-xs">LÍDER EVANGELISMO - DATA:</label>
+                <Calendar value={formData.data_evangelismo} onChange={(e) => setFormData({ ...formData, data_evangelismo: e.value })} dateFormat="dd/mm/yy" mask="99/99/9999" />
+            </div>
+            <div className="col-12 md:col-4"></div>
+        </div>
+
+        {/* Adicione outros campos adicionais se necessário, como 'adicional' boolean */}
+
+    </div>
+</div>
+
 
 
                     {/* SEÇÃO DE ASSINATURA */}
