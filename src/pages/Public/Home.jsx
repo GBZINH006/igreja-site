@@ -92,7 +92,7 @@ export const Home = () => {
                     <h1 className="text-4xl md:text-7xl font-bold mb-2">AD BELA VISTA</h1>
                     <p className="text-xl md:text-2xl mb-5 font-light">Setor 9 - Palhoça/SC</p>
                     <div className="flex justify-content-center">
-                        <Button label="CADASTRAR-SE" icon="pi pi-user-plus" className="p-button-warning p-button-raised p-button-lg px-6" onClick={() => navigate('/cadastrar')} />
+                        <Button label="CADASTRAR-SE" icon="pi pi-user-plus" className="p-button-warning p-button-raised p-button-lg px-6" onClick={() => navigate('/FichaCadastro')} />
                     </div>
                 </div>
             </div>
@@ -106,7 +106,7 @@ export const Home = () => {
                                 <i className="pi pi-users text-2xl text-black"></i>
                             </div>
                             <h3 className="m-0 mb-2 text-900 font-bold">Membros</h3>
-                            <p className="text-700 text-sm mb-4">Acesse seu portal, dízimos e cursos.</p>
+                            <p className="text-700 text-sm mb-4">Cadastre-se para ter acesso ao portal de membros</p>
                             <Button label="ACESSAR" className="p-button-sm w-full p-button-rounded" onClick={() => navigate('/FichaCadastro')} />
                         </Card>
                     </div>
