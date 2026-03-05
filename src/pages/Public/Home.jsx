@@ -1,45 +1,40 @@
-import React, { useState, useRef } from 'react'; // Importado useState e useRef
+import React, { useState, useRef } from 'react';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useNavigate } from 'react-router-dom';
-import { Dialog } from 'primereact/dialog'; // Novo
-import { InputText } from 'primereact/inputtext'; // Novo
-import { Password } from 'primereact/password'; // Novo
-import { Toast } from 'primereact/toast'; // Novo
-import "./style.css"
+import { Dialog } from 'primereact/dialog';
+import { Password } from 'primereact/password';
+import { Toast } from 'primereact/toast';
+import './style.css';
 
 export const Home = () => {
     const navigate = useNavigate();
     const toast = useRef(null);
 
-    // Estados para controle de acesso e animação
     const [displayLogin, setDisplayLogin] = useState(false);
     const [isShaking, setIsShaking] = useState(false);
     const [password, setPassword] = useState('');
 
-    const eventos = [];
-
-    // Função que valida o acesso
     const handleAdminAccess = () => {
-        if (password === 'paodavida') { // Substitua pela sua lógica de senha
+        if (password === 'paodavida') {
             navigate('/admin-login');
-        } else {
-            setIsShaking(true);
-            toast.current.show({ 
-                severity: 'error', 
-                summary: 'Acesso Negado', 
-                detail: 'Senha administrativa incorreta.', 
-                life: 3000 
-            });
-            setTimeout(() => setIsShaking(false), 400);
+            return;
         }
+
+        setIsShaking(true);
+        toast.current.show({
+            severity: 'error',
+            summary: 'Acesso Negado',
+            detail: 'Senha administrativa incorreta.',
+            life: 3000,
+        });
+        setTimeout(() => setIsShaking(false), 400);
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 font-sans">
+        <div className="min-h-screen font-sans page-fade-in">
             <Toast ref={toast} />
-            
-            {/* CSS de Animação injetado diretamente */}
+
             <style>{`
                 @keyframes shake {
                     0% { transform: translateX(0); }
@@ -51,27 +46,26 @@ export const Home = () => {
                 .shake-card { animation: shake 0.4s ease-in-out; }
             `}</style>
 
-            {/* MODAL DE LOGIN (Aparece ao clicar em Gerenciar) */}
-            <Dialog 
-                header="Acesso Restrito" 
-                visible={displayLogin} 
-                style={{ width: '350px' }} 
+            <Dialog
+                header="Acesso Restrito"
+                visible={displayLogin}
+                style={{ width: '350px' }}
                 onHide={() => setDisplayLogin(false)}
-                footer={
+                footer={(
                     <div>
                         <Button label="Cancelar" icon="pi pi-times" onClick={() => setDisplayLogin(false)} className="p-button-text" />
                         <Button label="Entrar" icon="pi pi-check" onClick={handleAdminAccess} autoFocus />
                     </div>
-                }
+                )}
             >
                 <div className="flex flex-column gap-2 mt-2">
                     <label htmlFor="pass">Digite a senha de administrador:</label>
-                    <Password 
-                        id="pass" 
-                        value={password} 
-                        onChange={(e) => setPassword(e.target.value)} 
-                        feedback={false} 
-                        toggleMask 
+                    <Password
+                        id="pass"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        feedback={false}
+                        toggleMask
                         className="w-full"
                         inputClassName="w-full"
                         onKeyDown={(e) => e.key === 'Enter' && handleAdminAccess()}
@@ -79,16 +73,18 @@ export const Home = () => {
                 </div>
             </Dialog>
 
-            {/* 1. BANNER PRINCIPAL */}
-            <div className="relative w-full h-30rem md:h-40rem flex align-items-center justify-content-center text-white" 
-                 style={{ 
-                     background: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('src/pages/Public/Igreja1.jpg')",
-                     backgroundSize: 'cover',
-                     backgroundPosition: 'center',
-                     backgroundRepeat: 'no-repeat'
-                 }}>
-                <div className="text-center p-4">
+            <div
+                className="hero-overlay relative w-full h-30rem md:h-40rem flex align-items-center justify-content-center text-white border-round-bottom-3xl overflow-hidden"
+                style={{
+                    background: "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('src/pages/Public/Igreja1.jpg')",
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                }}
+            >
+                <div className="hero-content text-center p-4">
                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzJVKsXgOQMSsC2HaVNYw9XeATeJZ7lo4TWw&s" alt="Logo" className="w-6rem mb-4" />
+                    <span className="hero-badge"><i className="pi pi-star-fill"></i> Comunidade, Fé e Serviço</span>
                     <h1 className="text-4xl md:text-7xl font-bold mb-2">AD BELA VISTA</h1>
                     <p className="text-xl md:text-2xl mb-5 font-light">Setor 9 - Palhoça/SC</p>
                     <div className="flex justify-content-center">
@@ -97,11 +93,10 @@ export const Home = () => {
                 </div>
             </div>
 
-            {/* 2. CARDS */}
-            <div className="relative px-4 md:px-8 mt-6 z-1"> 
+            <div className="relative px-4 md:px-8 mt-6 z-1">
                 <div className="grid justify-content-center">
                     <div className="col-12 md:col-4 lg:col-3">
-                        <Card className="text-center shadow-8 border-none bg-black-alpha-20 backdrop-blur-md hover:bg-black-alpha-10 transition-duration-300" style={{ borderRadius: '15px' }}>
+                        <Card className="text-center soft-card surface-glass border-none" style={{ borderRadius: '15px' }}>
                             <div className="p-3 border-circle bg-blue-600 inline-flex align-items-center justify-content-center mb-3">
                                 <i className="pi pi-users text-2xl text-black"></i>
                             </div>
@@ -111,10 +106,9 @@ export const Home = () => {
                         </Card>
                     </div>
 
-                    {/* CARD GESTÃO COM ANIMAÇÃO */}
                     <div className="col-12 md:col-4 lg:col-3">
-                        <Card 
-                            className={`text-center shadow-8 border-none bg-black-alpha-20 backdrop-blur-md hover:bg-black-alpha-10 transition-duration-300 ${isShaking ? 'shake-card border-1 border-red-500' : ''}`} 
+                        <Card
+                            className={`text-center soft-card surface-glass border-none ${isShaking ? 'shake-card border-1 border-red-500' : ''}`}
                             style={{ borderRadius: '15px' }}
                         >
                             <div className="p-3 border-circle bg-orange-600 inline-flex align-items-center justify-content-center mb-3">
@@ -122,39 +116,78 @@ export const Home = () => {
                             </div>
                             <h3 className="m-0 mb-2 text-900 font-bold">Gestão</h3>
                             <p className="text-700 text-sm mb-4">Secretaria, Mídia e Painel Pastoral.</p>
-                            <Button 
-                                label="GERENCIAR" 
-                                severity="warning" 
-                                className="p-button-sm w-full p-button-rounded" 
-                                onClick={() => setDisplayLogin(true)} // Abre o Modal
+                            <Button
+                                label="GERENCIAR"
+                                severity="warning"
+                                className="p-button-sm w-full p-button-rounded"
+                                onClick={() => setDisplayLogin(true)}
                             />
                         </Card>
                     </div>
                 </div>
             </div>
-{/* 5. FOOTER */}
-            <footer className="bg-gray-900 text-white p-8 mt-8">
+
+            <section className="px-4 md:px-8 mt-4 mb-6">
+                <div className="surface-glass border-round-xl p-4 md:p-5 mx-auto" style={{ maxWidth: '950px' }}>
+                    <h2 className="m-0 mb-3 text-2xl font-bold text-900">Como começar no site</h2>
+                    <div className="grid">
+                        <div className="col-12 md:col-4">
+                            <div className="info-step">
+                            <p className="text-sm text-700 line-height-3 m-0">
+                                <strong>1. Faça seu cadastro:</strong> preencha sua ficha para entrar no portal de membros.
+                            </p>
+                            </div>
+                        </div>
+                        <div className="col-12 md:col-4">
+                            <div className="info-step">
+                            <p className="text-sm text-700 line-height-3 m-0">
+                                <strong>2. Aguarde aprovação:</strong> a secretaria valida suas informações antes de liberar o acesso.
+                            </p>
+                            </div>
+                        </div>
+                        <div className="col-12 md:col-4">
+                            <div className="info-step">
+                            <p className="text-sm text-700 line-height-3 m-0">
+                                <strong>3. Acesse suas áreas:</strong> acompanhe eventos, secretaria e avisos em um só lugar.
+                            </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        <Button label="Preencher ficha agora" icon="pi pi-file-edit" className="p-button-warning" onClick={() => navigate('/FichaCadastro')} />
+                        <Button
+                            label="Falar com a secretaria"
+                            icon="pi pi-whatsapp"
+                            severity="secondary"
+                            outlined
+                            onClick={() => window.open('https://wa.me/5592994410542', '_blank')}
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <footer className="footer-professional text-white p-8 mt-8">
                 <div className="grid container mx-auto">
                     <div className="col-12 md:col-6">
                         <h3 className="text-blue-400 font-bold mb-3 uppercase">AD Bela Vista - Setor 9</h3>
                         <p className="text-gray-400 line-height-3 text-sm">
-                             R. Blumenau - Bela Vista<br/>
-                            Palhoça - SC | CEP: 88132-745<br/>
+                            R. Blumenau - Bela Vista<br />
+                            Palhoça - SC | CEP: 88132-745<br />
                             <strong>Telefone:</strong> (92) 99441-0542
                         </p>
                     </div>
                     <div className="col-12 md:col-6 md:text-right">
                         <h3 className="text-white mb-4 font-bold">REDES SOCIAIS</h3>
                         <div className="flex justify-content-start md:justify-content-end gap-3">
-                            <Button 
-                                icon="pi pi-facebook" 
-                                className="p-button-rounded p-button-outlined p-button-secondary" 
+                            <Button
+                                icon="pi pi-facebook"
+                                className="p-button-rounded p-button-outlined p-button-secondary"
                                 onClick={() => window.open('www.facebook.com', '_blank')}
                             />
-                            <Button 
-                                icon="pi pi-instagram" 
-                                className="p-button-rounded p-button-outlined p-button-secondary" 
-                                onClick={() => window.open('https://www.instagram.com/adpalhoca_belavista9?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==', '_blank')} 
+                            <Button
+                                icon="pi pi-instagram"
+                                className="p-button-rounded p-button-outlined p-button-secondary"
+                                onClick={() => window.open('https://www.instagram.com/adpalhoca_belavista9?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==', '_blank')}
                             />
                         </div>
                     </div>
