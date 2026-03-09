@@ -1,301 +1,171 @@
-import React, { useState, useRef, useEffect } from 'react';
+// src/pages/Public/Home.jsx
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useNavigate } from 'react-router-dom';
-import { Dialog } from 'primereact/dialog';
-import { Password } from 'primereact/password';
-import { Toast } from 'primereact/toast';
-
-// Imagem de fundo do HERO (ajuste o caminho se necessário)
-import Igreja1 from './familiaPastor.jpg';
+import { supabase } from '../../services/supabase';
+import Fundo from './familiaPastor.jpg';
+import { CalendarYear } from '../components/CalendarYear';
+import { useCountdown } from './hooks/useCountdown';
 
 export const Home = () => {
   const navigate = useNavigate();
-  const toast = useRef(null);
-  const passInputRef = useRef(null);
-  const heroRef = useRef(null);
+  const overlayRef = useRef(null);
+  const [eventos, setEventos] = useState([]);
+  const [nextEvent, setNextEvent] = useState(null);
 
-  const [displayLogin, setDisplayLogin] = useState(false);
-  const [isShaking, setIsShaking] = useState(false);
-  const [password, setPassword] = useState('');
-
-  // Foca no input ao abrir o diálogo
+  // Fundo com parallax + reveal
   useEffect(() => {
-    if (displayLogin) {
-      const t = setTimeout(() => {
-        passInputRef.current?.querySelector('input')?.focus();
-      }, 60);
-      return () => clearTimeout(t);
-    }
-  }, [displayLogin]);
-
-  // Efeito de revelação + parallax no HERO ao rolar
-  useEffect(() => {
-    const el = heroRef.current;
+    const el = overlayRef.current;
     if (!el) return;
-
     let raf = 0;
-    let lastOverlay = 1;
+    let last = 1;
     let lastY = 0;
-
-    const clamp = (v, min, max) => Math.max(min, Math.min(v, max));
+    const clamp = (v, mi, ma) => Math.max(mi, Math.min(ma, v));
     const lerp = (a, b, t) => a + (b - a) * t;
 
     const onScroll = () => {
       if (raf) cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const max = 300; // distância de scroll (px) para revelar quase tudo
         const y = window.scrollY || 0;
-        const p = clamp(y / max, 0, 1); // 0..1
-
-        // Overlay: 1 (mais escuro) → 0.25 (quase sem overlay)
-        const targetOverlay = 1 - p * 0.75;
-        // Parallax: desloca levemente o background
-        const targetY = p * 28; // px
-
-        // Suavização (lerp) para sensação premium
-        lastOverlay = lerp(lastOverlay, targetOverlay, 0.2);
-        lastY = lerp(lastY, targetY, 0.2);
-
-        el.style.setProperty('--overlay', String(lastOverlay));
+        const p = clamp(y / 450, 0, 1);
+        const ov = 1 - p * 0.9;
+        const py = p * 40;
+        last = lerp(last, ov, 0.15);
+        lastY = lerp(lastY, py, 0.15);
+        el.style.setProperty('--op', String(last));
         el.style.setProperty('--y', `${lastY}px`);
       });
     };
-
-    // Estado inicial
     onScroll();
-
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      if (raf) cancelAnimationFrame(raf);
-    };
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleAdminAccess = () => {
-    // TODO: ideal é migrar para Supabase Auth ou variável de ambiente (VITE_ADMIN_PASS)
-    if (password === 'paodavida') {
-      setDisplayLogin(false);
-      setPassword('');
-      navigate('/admin-login'); // rota padronizada
-      return;
-    }
+  // Carrega eventos (até 12 meses)
+  const carregarEventos = async () => {
+    const hoje = new Date();
+    const noAno = new Date(hoje);
+    noAno.setFullYear(hoje.getFullYear() + 1);
 
-    setIsShaking(true);
-    toast.current.show({
-      severity: 'error',
-      summary: 'Acesso Negado',
-      detail: 'Senha administrativa incorreta.',
-      life: 2500,
-    });
-    setTimeout(() => setIsShaking(false), 400);
+    const { data, error } = await supabase
+      .from('eventos')
+      .select('*')
+      .gte('starts_at', hoje.toISOString())
+      .lte('starts_at', noAno.toISOString())
+      .eq('ativo', true)
+      .order('starts_at', { ascending: true });
+
+    if (!error) setEventos(data || []);
+
+    // Define próximo culto (destaque ou primeiro futuro)
+    const destaque = (data || []).find(e => e.destaque);
+    setNextEvent(destaque || (data || [])[0] || null);
   };
 
-  const onOpenAdmin = () => {
-    setPassword('');
-    setDisplayLogin(true);
-  };
+  useEffect(() => {
+    carregarEventos();
+
+    // opcional: realtime
+    const ch = supabase
+      .channel('public:eventos')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'eventos' }, () => carregarEventos())
+      .subscribe();
+
+    return () => { supabase.removeChannel(ch); };
+  }, []);
+
+  const { timeLeft, started, notifyIfStart } = useCountdown(nextEvent?.starts_at);
+
+  useEffect(() => {
+    if (started) notifyIfStart('O culto começou! Deus abençoe 🙌');
+  }, [started, notifyIfStart]);
 
   return (
-    <div className="min-h-screen font-sans page-fade-in">
-      <Toast ref={toast} />
-
-      {/* Estilos locais para animação, HERO e efeitos */}
-      <style>{`
-        /* Animação de "shake" no card de gestão */
-        @keyframes shake {
-          0% { transform: translateX(0); }
-          25% { transform: translateX(-10px); }
-          50% { transform: translateX(10px); }
-          75% { transform: translateX(-10px); }
-          100% { transform: translateX(0); }
-        }
-        .home-shake-card {
-          animation: shake 0.4s ease-in-out;
-        }
-
-        /* HERO com variáveis para overlay e parallax */
-        .home-hero {
-          position: relative;
-          border-bottom-left-radius: 1.5rem;
-          border-bottom-right-radius: 1.5rem;
-          overflow: hidden;
-
-          /* variáveis controladas pelo JS */
-          --overlay: 1;   /* 1 = escuro, 0 = claro */
-          --y: 0px;       /* deslocamento vertical do bg */
-
-          background-position: center calc(50% + var(--y));
-        }
-        .home-hero::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background: linear-gradient(to bottom, rgba(0,0,0,.55), rgba(0,0,0,.85));
-          opacity: var(--overlay);
-          transition: opacity .15s ease-out;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .home-hero::before { transition: none; }
-        }
-
-        .home-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: .4rem;
-          background: rgba(255,255,255,.15);
-          border: 1px solid rgba(255,255,255,.2);
-          padding: .35rem .75rem;
-          border-radius: 999px;
-          font-size: .9rem;
-        }
-      `}</style>
-
-      {/* Diálogo de login administrativo */}
-      <Dialog
-        header="Acesso Restrito"
-        visible={displayLogin}
-        style={{ width: '350px' }}
-        modal
-        dismissableMask
-        onHide={() => setDisplayLogin(false)}
-        footer={
-          <div className="flex justify-content-end gap-2">
-            <Button
-              label="Cancelar"
-              icon="pi pi-times"
-              onClick={() => setDisplayLogin(false)}
-              className="p-button-text"
-            />
-            <Button
-              label="Entrar"
-              icon="pi pi-check"
-              onClick={handleAdminAccess}
-              autoFocus
-            />
-          </div>
-        }
-      >
-        <div className="flex flex-column gap-2 mt-2" ref={passInputRef}>
-          <label htmlFor="admin-pass">Digite a senha de administrador:</label>
-          <Password
-            id="admin-pass"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            feedback={false}
-            toggleMask
-            className="w-full"
-            inputClassName="w-full"
-            onKeyDown={(e) => e.key === 'Enter' && handleAdminAccess()}
-          />
-        </div>
-      </Dialog>
-
-      {/* HERO com revelação ao rolar + parallax */}
+    <div className="min-h-screen relative">
+      {/* Fundo total */}
       <div
-        ref={heroRef}
-        className="home-hero relative w-full h-18rem md:h-22rem flex align-items-center justify-content-center text-white"
+        ref={overlayRef}
         style={{
-          backgroundImage: `url(${Igreja1})`,
+          position: 'fixed', inset: 0, zIndex: -5,
+          backgroundImage: `url(${Fundo})`,
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center calc(50% + var(--y))',
+          filter: 'brightness(var(--op))',
+          transition: 'filter .2s',
+          '--op': 1, '--y': '0px'
         }}
-      >
-        <div className="text-center p-4">
-          https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzJVKsXgOQMSsC2HaVNYw9XeATeJZ7lo4TWw&s
+      />
 
-          <span className="home-badge">
-            <i className="pi pi-star-fill" /> Comunidade, Fé e Serviço
-          </span>
-
-          <h1 className="text-4xl md:text-7xl font-bold mb-2 mt-3">AD BELA VISTA</h1>
-
-          <p className="text-xl md:text-2xl mb-4 font-light">Setor 9 - Palhoça/SC</p>
-
-          <div className="flex justify-content-center">
-            <Button
-              label="CADASTRAR-SE"
-              icon="pi pi-user-plus"
-              className="p-button-warning p-button-raised p-button-lg px-6"
-              onClick={() => navigate('/cadastro')}
-            />
-          </div>
+      {/* Top bar */}
+      <div className="w-full flex justify-content-center mt-3">
+        <div className="flex gap-3 p-2 px-4 bg-white border-round shadow-2" style={{ backdropFilter: 'blur(4px)' }}>
+          <Button label="Contribua" icon="pi pi-wallet" className="p-button-text" onClick={() => navigate('/contribua')} />
+          <Button label="Pedido de Oração" icon="pi pi-heart-fill" className="p-button-text text-red-500" onClick={() => navigate('/pedido-oracao')} />
+          <Button label="Agenda" icon="pi pi-calendar" className="p-button-text" onClick={() => navigate('/agenda')} />
+          <Button label="Entrar" icon="pi pi-sign-in" className="p-button-text" onClick={() => navigate('/login')} />
         </div>
       </div>
 
-      {/* CARDS */}
-      <div className="relative px-4 md:px-8 mt-6 z-1">
-        <div className="grid justify-content-center">
-          {/* Card Membros */}
-          <div className="col-12 md:col-4 lg:col-3">
-            <Card className="text-center surface-card border-none shadow-3" style={{ borderRadius: '15px' }}>
-              <div className="p-3 border-circle bg-blue-100 inline-flex align-items-center justify-content-center mb-3">
-                <i className="pi pi-users text-2xl text-blue-700" />
-              </div>
+      {/* Hero simples */}
+      <div className="text-center mt-6 text-white">
+        https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzJVKsXgOQMSsC2HaVNYw9XeATeJZ7lo4TWw&s
 
-              <h3 className="m-0 mb-2 text-900 font-bold">Membros</h3>
+        <h1 className="text-4xl md:text-6xl font-bold">AD BELA VISTA</h1>
+        <p className="text-xl md:text-2xl">Setor 9 • Palhoça/SC</p>
 
-              <p className="text-700 text-sm mb-4">
-                Cadastre-se para ter acesso ao portal de membros
-              </p>
-
-              <Button
-                label="ACESSAR"
-                className="p-button-sm w-full p-button-rounded"
-                onClick={() => navigate('/cadastro')}
-              />
-            </Card>
+        {/* Contagem regressiva */}
+        {nextEvent ? (
+          <div className="mt-3">
+            <div className="text-lg">Próximo culto: <strong>{new Date(nextEvent.starts_at).toLocaleString()}</strong></div>
+            <div className="text-3xl font-bold mt-1">{timeLeft}</div>
           </div>
+        ) : (
+          <div className="mt-3 text-lg">Em breve os próximos cultos serão publicados aqui.</div>
+        )}
 
-          {/* Card Gestão */}
-          <div className="col-12 md:col-4 lg:col-3">
-            <Card
-              className={`text-center surface-card border-none shadow-3 ${isShaking ? 'home-shake-card border-1 border-red-500' : ''}`}
-              style={{ borderRadius: '15px' }}
-            >
-              <div className="p-3 border-circle bg-orange-100 inline-flex align-items-center justify-content-center mb-3">
-                <i className="pi pi-lock text-2xl text-orange-700" />
-              </div>
-
-              <h3 className="m-0 mb-2 text-900 font-bold">Gestão</h3>
-
-              <p className="text-700 text-sm mb-4">Secretaria, Mídia e Painel Pastoral.</p>
-
-              <Button
-                label="GERENCIAR"
-                severity="warning"
-                className="p-button-sm w-full p-button-rounded"
-                onClick={onOpenAdmin}
-              />
-            </Card>
-          </div>
+        <div className="mt-4">
+          <Button label="Acompanhar Agenda" icon="pi pi-calendar" className="p-button-warning p-button-raised px-5" onClick={() => navigate('/agenda')} />
         </div>
       </div>
 
-      {/* FOOTER */}
-      <footer className="bg-gray-900 text-white p-8 mt-8">
-        <div className="grid container mx-auto">
-          <div className="col-12 md:col-6">
-            <h3 className="text-blue-400 font-bold mb-3 uppercase">
-              AD Bela Vista - Setor 9
-            </h3>
-
-            <p className="text-gray-400 line-height-3 text-sm">
-              R. Blumenau - Bela Vista
-              <br />
-              Palhoça - SC | CEP: 88132-745
-              <br />
-              <strong>Telefone:</strong> (92) 99441-0542
-            </p>
-          </div>
+      {/* Últimos eventos (cards) */}
+      <div className="px-4 mt-6">
+        <h2 className="text-2xl font-bold text-white mb-3">Últimos Eventos</h2>
+        <div className="grid">
+          {eventos.slice(0, 3).map(ev => (
+            <div key={ev.id} className="col-12 md:col-4">
+              <Card className="shadow-3">
+                {!!ev.banner_url && (
+                  <img src={ev.banner_url} alt={ev.titulo} style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 8 }} loading="lazy" />
+                )}
+                <h3 className="mt-3 mb-1">{ev.titulo}</h3>
+                <div className="text-600 mb-2">
+                  {new Date(ev.starts_at).toLocaleString()} {ev.local ? `• ${ev.local}` : ''}
+                </div>
+                <p className="m-0">{ev.descricao || ''}</p>
+              </Card>
+            </div>
+          ))}
+          {eventos.length === 0 && (
+            <div className="col-12">
+              <Card className="shadow-3">
+                <p className="m-0">Sem eventos publicados ainda.</p>
+              </Card>
+            </div>
+          )}
         </div>
+      </div>
 
-        <div className="border-top-1 border-gray-800 mt-6 pt-4 text-center text-xs text-gray-500 font-light">
-          © {new Date().getFullYear()} Assembleia de Deus Bela Vista. Desenvolvido para a glória de Deus.
-        </div>
-      </footer>
+      {/* Agenda (ano) */}
+      <div className="px-4 mt-6 mb-8">
+        <h2 className="text-2xl font-bold text-white mb-3">Agenda Anual</h2>
+        <Card className="shadow-3">
+          <CalendarYear events={eventos} />
+        </Card>
+      </div>
     </div>
   );
 };
+``
