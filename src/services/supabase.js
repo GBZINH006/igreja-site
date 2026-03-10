@@ -1,7 +1,17 @@
+// src/services/supabase.js
 import { createClient } from '@supabase/supabase-js';
 
-// Pegue esses dados em Settings > API no seu painel Supabase
-const supabaseUrl = 'https://hcxsmphzsebeaddowcvz.supabase.co';
-const supabaseKey = 'sb_publishable_miFUhXV1GAk2HYy70qzvAQ_B0Z8vi3i';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Logs úteis no dev
+if (!supabaseUrl) console.error('❌ VITE_SUPABASE_URL não definida (.env.local)');
+if (!supabaseAnonKey) console.error('❌ VITE_SUPABASE_ANON_KEY não definida (.env.local)');
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+});

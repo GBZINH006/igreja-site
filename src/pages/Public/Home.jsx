@@ -1,29 +1,26 @@
-// src/pages/Public/Home.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../services/supabase';
 import Fundo from './familiaPastor.jpg';
-import { CalendarYear } from '../components/CalendarYear';
+import { supabase } from '../../services/supabase';
 import { useCountdown } from './hooks/useCountdown';
 
 export const Home = () => {
   const navigate = useNavigate();
   const overlayRef = useRef(null);
+
   const [eventos, setEventos] = useState([]);
   const [nextEvent, setNextEvent] = useState(null);
+  const { timeLeft, started, notifyIfStart } = useCountdown(nextEvent?.starts_at);
 
   // Fundo com parallax + reveal
   useEffect(() => {
     const el = overlayRef.current;
     if (!el) return;
-    let raf = 0;
-    let last = 1;
-    let lastY = 0;
+    let raf = 0, last = 1, lastY = 0;
     const clamp = (v, mi, ma) => Math.max(mi, Math.min(ma, v));
     const lerp = (a, b, t) => a + (b - a) * t;
-
     const onScroll = () => {
       if (raf) cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
@@ -42,40 +39,30 @@ export const Home = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Carrega eventos (até 12 meses)
+  // Carrega eventos e define próximo culto
   const carregarEventos = async () => {
     const hoje = new Date();
-    const noAno = new Date(hoje);
-    noAno.setFullYear(hoje.getFullYear() + 1);
-
     const { data, error } = await supabase
       .from('eventos')
       .select('*')
       .gte('starts_at', hoje.toISOString())
-      .lte('starts_at', noAno.toISOString())
       .eq('ativo', true)
       .order('starts_at', { ascending: true });
-
-    if (!error) setEventos(data || []);
-
-    // Define próximo culto (destaque ou primeiro futuro)
-    const destaque = (data || []).find(e => e.destaque);
-    setNextEvent(destaque || (data || [])[0] || null);
+    if (!error) {
+      setEventos(data || []);
+      const destaque = (data || []).find(e => e.destaque);
+      setNextEvent(destaque || (data || [])[0] || null);
+    }
   };
 
   useEffect(() => {
     carregarEventos();
-
-    // opcional: realtime
     const ch = supabase
-      .channel('public:eventos')
+      .channel('public:eventos:home')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'eventos' }, () => carregarEventos())
       .subscribe();
-
     return () => { supabase.removeChannel(ch); };
   }, []);
-
-  const { timeLeft, started, notifyIfStart } = useCountdown(nextEvent?.starts_at);
 
   useEffect(() => {
     if (started) notifyIfStart('O culto começou! Deus abençoe 🙌');
@@ -98,27 +85,29 @@ export const Home = () => {
         }}
       />
 
-      {/* Top bar */}
+      {/* Barra topo */}
       <div className="w-full flex justify-content-center mt-3">
         <div className="flex gap-3 p-2 px-4 bg-white border-round shadow-2" style={{ backdropFilter: 'blur(4px)' }}>
           <Button label="Contribua" icon="pi pi-wallet" className="p-button-text" onClick={() => navigate('/contribua')} />
           <Button label="Pedido de Oração" icon="pi pi-heart-fill" className="p-button-text text-red-500" onClick={() => navigate('/pedido-oracao')} />
+          <Button label="Ficha de Membro" icon="pi pi-file-edit" className="p-button-text" onClick={() => navigate('/cadastro')} />
           <Button label="Agenda" icon="pi pi-calendar" className="p-button-text" onClick={() => navigate('/agenda')} />
           <Button label="Entrar" icon="pi pi-sign-in" className="p-button-text" onClick={() => navigate('/login')} />
         </div>
       </div>
 
-      {/* Hero simples */}
+      {/* Hero + countdown */}
       <div className="text-center mt-6 text-white">
         https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzJVKsXgOQMSsC2HaVNYw9XeATeJZ7lo4TWw&s
 
         <h1 className="text-4xl md:text-6xl font-bold">AD BELA VISTA</h1>
         <p className="text-xl md:text-2xl">Setor 9 • Palhoça/SC</p>
 
-        {/* Contagem regressiva */}
         {nextEvent ? (
           <div className="mt-3">
-            <div className="text-lg">Próximo culto: <strong>{new Date(nextEvent.starts_at).toLocaleString()}</strong></div>
+            <div className="text-lg">
+              Próximo culto: <strong>{new Date(nextEvent.starts_at).toLocaleString()}</strong>
+            </div>
             <div className="text-3xl font-bold mt-1">{timeLeft}</div>
           </div>
         ) : (
@@ -126,15 +115,48 @@ export const Home = () => {
         )}
 
         <div className="mt-4">
-          <Button label="Acompanhar Agenda" icon="pi pi-calendar" className="p-button-warning p-button-raised px-5" onClick={() => navigate('/agenda')} />
+          <Button label="Abrir Ficha de Membro" icon="pi pi-external-link" className="p-button-warning p-button-raised px-5" onClick={() => navigate('/cadastro')} />
         </div>
       </div>
 
-      {/* Últimos eventos (cards) */}
-      <div className="px-4 mt-6">
-        <h2 className="text-2xl font-bold text-white mb-3">Últimos Eventos</h2>
+      {/* Cards principais */}
+      <div className="grid justify-content-center gap-4 px-4 mt-5">
+        {/* Ficha de Membro */}
+        <div className="col-12 md:col-4 lg:col-3">
+          <Card className="text-center">
+            <i className="pi pi-file-edit text-3xl text-indigo-600 mb-3" />
+            <h3>Ficha de Membro</h3>
+            <p>Preencha sua ficha para cadastro/atualização.</p>
+            <Button label="ABRIR FICHA" icon="pi pi-external-link" className="w-full" onClick={() => navigate('/cadastro')} />
+          </Card>
+        </div>
+
+        {/* Contribua */}
+        <div className="col-12 md:col-4 lg:col-3">
+          <Card className="text-center">
+            <i className="pi pi-wallet text-3xl text-green-600 mb-3" />
+            <h3>Contribua</h3>
+            <p>Apoie a obra! Em breve: PIX com QR Code.</p>
+            <Button label="ACESSAR" className="w-full" onClick={() => navigate('/contribua')} />
+          </Card>
+        </div>
+
+        {/* Pedido de Oração */}
+        <div className="col-12 md:col-4 lg:col-3">
+          <Card className="text-center">
+            <i className="pi pi-heart-fill text-3xl text-pink-500 mb-3" />
+            <h3>Pedido de Oração</h3>
+            <p>Envie seu pedido. A igreja orará por você.</p>
+            <Button label="ENVIAR" className="w-full" onClick={() => navigate('/pedido-oracao')} />
+          </Card>
+        </div>
+      </div>
+
+      {/* Agenda da Home (resumo) */}
+      <div className="px-4 mt-6 mb-8">
+        <h2 className="text-2xl font-bold text-white mb-3">Próximos Eventos</h2>
         <div className="grid">
-          {eventos.slice(0, 3).map(ev => (
+          {(eventos || []).slice(0, 3).map(ev => (
             <div key={ev.id} className="col-12 md:col-4">
               <Card className="shadow-3">
                 {!!ev.banner_url && (
@@ -148,7 +170,7 @@ export const Home = () => {
               </Card>
             </div>
           ))}
-          {eventos.length === 0 && (
+          {(!eventos || eventos.length === 0) && (
             <div className="col-12">
               <Card className="shadow-3">
                 <p className="m-0">Sem eventos publicados ainda.</p>
@@ -156,14 +178,6 @@ export const Home = () => {
             </div>
           )}
         </div>
-      </div>
-
-      {/* Agenda (ano) */}
-      <div className="px-4 mt-6 mb-8">
-        <h2 className="text-2xl font-bold text-white mb-3">Agenda Anual</h2>
-        <Card className="shadow-3">
-          <CalendarYear events={eventos} />
-        </Card>
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { Suspense } from 'react';
 import { PrimeReactProvider } from 'primereact/api';
 
@@ -14,7 +13,8 @@ import { Login } from './pages/Public/Login';
 import { Agenda } from './pages/Public/Agenda';
 import { Admin } from './pages/Admin/Admin';
 import { NotFound } from './pages/Public/NotFound';
-import { FichaCadastro } from './pages/Public/FichaCadastro'; // se ainda quiser expor
+import { FichaCadastro } from './pages/Public/FichaCadastro';
+import RequireAdmin from './guards/RequireAdmin';
 
 export default function App() {
   return (
@@ -25,11 +25,17 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
 
-            {/* Opcional, se quiser manter a rota de ficha direta */}
             <Route path="/cadastro" element={<FichaCadastro />} />
-
             <Route path="/agenda" element={<Agenda />} />
-            <Route path="/admin" element={<Admin />} />
+
+            <Route
+              path="/admin"
+              element={
+                <RequireAdmin>
+                  <Admin />
+                </RequireAdmin>
+              }
+            />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -38,4 +44,3 @@ export default function App() {
     </PrimeReactProvider>
   );
 }
-``
